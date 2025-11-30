@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { use, useState, useEffect } from 'react'
 import { useContext } from 'react'
 import { AppContext } from '../context/AppContext'
 import { assets, JobCategories, JobLocations } from '../assets/assets'
@@ -9,7 +9,28 @@ const JobListing = () => {
   const { isSearched, searchFilter, setSearchFilter, jobs } = useContext(AppContext)
   const [showFilter, setShowFilter] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const totalPages = Math.ceil(jobs.length / 6)
+  const [totalPages, setTotalPages] = useState(Math.ceil(jobs.length / 6))
+  const [selectedCategories, setSelectedCategories] = useState([])
+  const [selectedLocations, setSelectedLocations] = useState([])
+  const [filterdJobs, setFilteredJobs] = useState(jobs)
+  const handleCategoryChange = (category) => {
+    setSelectedCategories(prevCategories => prevCategories.includes(category) ? prevCategories.filter(c => c !== category) : [...prevCategories, category]);
+  }
+  const handleLocationChange = (location) => {
+    setSelectedLocations(prevLocations => prevLocations.includes(location) ? prevLocations.filter(l => l !== location) : [...prevLocations, location]);
+  }
+  useEffect(() => {
+    const matchesCategories = job => selectedCategories.length === 0 || selectedCategories.includes(job.category)
+    const matchesLocations = job => selectedLocations.length === 0 || selectedLocations.includes(job.location)
+    const matchesTitle = job => searchFilter.title === "" || job.title.toLowerCase().includes(searchFilter.title.toLowerCase())
+
+    const matchesSearchLocation = job => searchFilter.location === "" || job.location.toLowerCase().includes(searchFilter.location.toLowerCase())
+    const newFilteredJobs = jobs.slice().reverse().filter(job => matchesCategories(job) && matchesLocations(job) && matchesTitle(job) && matchesSearchLocation(job))
+    setFilteredJobs(newFilteredJobs)
+    setCurrentPage(1)
+    setTotalPages(Math.ceil(newFilteredJobs.length / 6))
+
+  }, [selectedCategories, selectedLocations, searchFilter, jobs])
 
   return (
     <div className='container 2xl:px-20 mx-auto flex flex-col lg:flex-row max-lg: space-y-8 py-8'>
@@ -50,7 +71,8 @@ const JobListing = () => {
             {
               JobCategories.map((category, index) => (
                 <li key={index} className='flex gap-3 items-center'>
-                  <input type="checkbox" className='scale-125' />
+                  <input type="checkbox" className='scale-125' onChange={() => handleCategoryChange(category)}
+                    checked={selectedCategories.includes(category)} />
                   <label>{category}</label>
                 </li>
               ))
@@ -64,7 +86,8 @@ const JobListing = () => {
             {
               JobLocations.map((location, index) => (
                 <li key={index} className='flex gap-3 items-center'>
-                  <input type="checkbox" className='scale-125' />
+                  <input type="checkbox" className='scale-125'
+                    onChange={() => handleLocationChange(location)} checked={selectedLocations.includes(location)} />
                   <label>{location}</label>
                 </li>
               ))
@@ -80,13 +103,13 @@ const JobListing = () => {
         <h3 className='font-medium text-3xl py-2' id='job-list'>Latest Jobs</h3>
         <p className='mb-8'>Get your desired job here.</p>
         <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'>
-          {jobs.slice((currentPage - 1) * 6, currentPage * 6).map((job, index) => (
+          {filterdJobs.slice((currentPage - 1) * 6, currentPage * 6).map((job, index) => (
             <JobCard key={index} job={job} />
           ))}
         </div>
         {/* Pagination */}
         {
-          jobs.length > 0 && (
+          filterdJobs.length > 0 && (
             <div className='flex items-center justify-center mt-10 space-x-2'>
               <button
                 type='button'
