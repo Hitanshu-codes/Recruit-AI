@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useContext } from 'react'
 import { AppContext } from '../context/AppContext'
 import { assets, JobCategories, JobLocations } from '../assets/assets'
@@ -7,6 +7,10 @@ import JobCard from './JobCard'
 
 const JobListing = () => {
   const { isSearched, searchFilter, setSearchFilter, jobs } = useContext(AppContext)
+  const [showFilter, setShowFilter] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const totalPages = Math.ceil(jobs.length / 6)
+
   return (
     <div className='container 2xl:px-20 mx-auto flex flex-col lg:flex-row max-lg: space-y-8 py-8'>
       {/* Sidebar */}
@@ -36,8 +40,11 @@ const JobListing = () => {
               {/* <p>Search for jobs</p> */}
             </div>
         }
+        <button onClick={e => setShowFilter(prev => !prev)} className='px-6 py-1.5 rounded border border-gray-400 lg:hidden'>
+          {showFilter ? "Close" : "Filters"}
+        </button>
         {/* Category Filter */}
-        <div className=''>
+        <div className={showFilter ? "block" : "max-lg:hidden"}>
           <h4 className='font-medium text-lg py-4'>Search by Categories</h4>
           <ul className='space-y-4 text-gray-600'>
             {
@@ -51,7 +58,7 @@ const JobListing = () => {
           </ul>
         </div>
         {/* Location Filter */}
-        <div className='pt-10'>
+        <div className={showFilter ? "block pt-10" : "max-lg:hidden pt-10"}>
           <h4 className='font-medium text-lg py-4'>Search by Locations</h4>
           <ul className='space-y-4 text-gray-600'>
             {
@@ -73,10 +80,45 @@ const JobListing = () => {
         <h3 className='font-medium text-3xl py-2' id='job-list'>Latest Jobs</h3>
         <p className='mb-8'>Get your desired job here.</p>
         <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'>
-          {jobs.map((job, index) => (
+          {jobs.slice((currentPage - 1) * 6, currentPage * 6).map((job, index) => (
             <JobCard key={index} job={job} />
           ))}
         </div>
+        {/* Pagination */}
+        {
+          jobs.length > 0 && (
+            <div className='flex items-center justify-center mt-10 space-x-2'>
+              <button
+                type='button'
+                aria-label='Previous page'
+                disabled={currentPage === 1}
+                className='disabled:opacity-50'
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              >
+                <img src={assets.left_arrow_icon} alt='Previous' />
+              </button>
+              {Array.from({ length: totalPages }).map((_, index) => (
+                <a key={index} href="#job-list" className='mx-4'>
+                  <button
+                    type='button'
+                    onClick={e => setCurrentPage(index + 1)}
+                    className={`w-10 h-10 flex items-center justify-center border border-gray-300 rounded ${index + 1 === currentPage ? "bg-blue-600 text-gray-200" : ""}`}
+                  >
+                    {index + 1}
+                  </button>
+                </a>
+              ))}
+              <button
+                type='button'
+                aria-label='Next page'
+                disabled={currentPage === totalPages}
+                className='disabled:opacity-50'
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              >
+                <img src={assets.right_arrow_icon} alt='Next' />
+              </button>
+            </div>
+          )}
       </section>
     </div>
   )
