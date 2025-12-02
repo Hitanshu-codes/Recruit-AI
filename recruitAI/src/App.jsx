@@ -6,15 +6,19 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import ApplyJob from './pages/ApplyJob'
 import Applications from './pages/Applications'
+import RecruiterLogin from './components/RecruiterLogin'
 function App() {
   const [count, setCount] = useState(0)
 
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/apply-job/:id" element={<ApplyJob />} />
-      <Route path="/applications" element={<Applications />} />
-    </Routes>
+    <div>
+      <RecruiterLogin />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/apply-job/:id" element={<ApplyJob />} />
+        <Route path="/applications" element={<Applications />} />
+      </Routes>
+    </div>
   )
 }
 
