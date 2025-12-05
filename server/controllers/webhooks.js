@@ -15,6 +15,9 @@ export const clerkWebhooks = async (req, res) => {
       "svix-signature": req.headers["svix-signature"],
     });
 
+    // Log incoming webhook data
+    console.log("Received webhook data:", req.body);
+
     // getting data from request body
     const { data, type } = req.body;
     // switch case for different events
@@ -60,9 +63,10 @@ export const clerkWebhooks = async (req, res) => {
         break;
     }
   }
+  // Error handling
   catch (error) {
-    console.log(error)
-    res.json({ success: false, message: "error" })
+    console.error("Error processing webhook:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 }
 
