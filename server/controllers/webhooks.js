@@ -3,7 +3,7 @@ import User from "../models/User.js";
 
 // Api controller function to manage clerk user with database
 
-const webhooks = async (req, res) => {
+export const clerkWebhooks = async (req, res) => {
   try {
     // create svix instance with clerk webhook secret
     const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
@@ -66,4 +66,3 @@ const webhooks = async (req, res) => {
   }
 }
 
-export { webhooks }
