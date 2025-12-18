@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import './config/instrument.js'
 import companyroutes from './routes/companyRoutes.js'
+import jobroutes from './routes/jobRoutes.js'
 
 import dotenv from 'dotenv/config'
 import { clerkWebhooks } from './controllers/webhooks.js'
@@ -29,6 +30,8 @@ app.get('/', (req, res) => {
 app.post('/webhooks', clerkWebhooks)
 
 app.use('/api/company', companyroutes)
+
+app.use('/api/jobs', jobroutes)
 
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))

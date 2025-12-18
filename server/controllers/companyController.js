@@ -1,8 +1,11 @@
 // Register a new Company
 import Company from '../models/Company.js'
+import Job from '../models/Job.js'
 import { v2 as cloudinary } from 'cloudinary' // import cloudinary from '../config/cloudinary.js'
 import bcrypt from 'bcrypt'
 import generateToken from '../utils/generateToken.js'
+
+// Register a new Company
 export const registerCompany = async (req, res) => {
   const { name, email, password } = req.body
   const imageFile = req.file
@@ -82,22 +85,87 @@ export const loginCompany = async (req, res) => {
 }
 
 // get company data
-export const getCompanyData = async (req, res) => { }
+export const getCompanyData = async (req, res) => {
+
+  try {
+    const company = req.company
+    return res.status(200).json({ success: true, company })
+  }
+  catch (error) {
+    console.log(error)
+    return res.status(500).json({ success: false, message: "Server error" })
+  }
+
+}
 
 
 // post a new job
-export const postJob = async (req, res) => { }
+export const postJob = async (req, res) => {
+  const { title, location, salary, description, level, category } = req.body;
+
+  const companyId = req.company._id
+  // console.log(companyId, { title, location, salary, description })
+  try {
+    const newJob = new Job({
+      title,
+      location,
+      salary,
+      description,
+      companyId,
+      date: Date.now(),
+      level,
+      category
+    })
+    await newJob.save()
+    return res.status(200).json({ success: true, message: "Job posted successfully" })
+  }
+  catch (error) {
+    console.log(error)
+    return res.status(500).json({ success: false, message: error.message })
+  }
+
+
+}
 
 // get company job applicants
 export const getJobApplicants = async (req, res) => { }
 
 // get company posted jobs
-export const getCompanyPostedJobs = async (req, res) => { }
+export const getCompanyPostedJobs = async (req, res) => {
+  try {
+    const companyId = req.company._id
+    const jobs = await Job.find({ companyId })
+    return res.status(200).json({ success: true, jobsData: jobs })
+
+  }
+  catch (error) {
+    console.log(error)
+    return res.status(500).json({ success: false, message: error.message })
+  }
+}
 
 // change job Application status
 export const changeJobApplicationStatus = async (req, res) => { }
 
 // change job visibilty
-export const changeJobVisibilty = async (req, res) => { }
+export const changeJobVisibilty = async (req, res) => {
+  try {
+    const { id } = req.body
+    const companyId = req.company._id
+    const job = await Job.findById(id)
+    if (companyId.toString() !== job.companyId.toString())
+      return res.status(400).json({ success: false, message: "You are not authorized to change this job visibilty" })
+
+    job.visible = !job.visible
+    await job.save()
+    return res.status(200).json({ success: true, message: "Job visibilty changed successfully", jobData: job })
+  }
+
+  catch (error) {
+    console.log(error)
+    return res.status(500).json({ success: false, message: error.message })
+  }
+
+}
 
 export const updateCompany = async (req, res) => { }
