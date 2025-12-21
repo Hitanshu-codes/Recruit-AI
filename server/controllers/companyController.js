@@ -59,8 +59,11 @@ export const loginCompany = async (req, res) => {
 
   try {
     const company = await Company.findOne({ email })
+    if (!company) return res.status(400).json({ success: false, message: "Company login failed because of invalid credentials" })
 
-    if (bcrypt.compare(password, company.password)) {
+    const isMatch = await bcrypt.compare(password, company.password)
+
+    if (isMatch) {
       res.json({
         success: true,
         message: "Company logged in successfully",
