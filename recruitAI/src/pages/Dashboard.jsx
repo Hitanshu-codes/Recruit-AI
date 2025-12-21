@@ -1,9 +1,12 @@
 import React from 'react'
 import { assets } from '../assets/assets'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useContext } from 'react'
+import { AppContext } from '../context/AppContext'
 
 const Dashboard = () => {
   const navigate = useNavigate()
+  const { companyData } = useContext(AppContext)
   return (
     <div className='min-h-screen'>
       {/* Navbar for Recruiter Panel */}
@@ -16,17 +19,19 @@ const Dashboard = () => {
               <span className='font-semibold'>AI</span>
             </h1>
           </span>
-          <div className='flex items-center gap-3'>
-            <p className='max-sm:hidden'>Welcome, Recruiter</p>
+          {companyData && (<div className='flex items-center gap-3'>
+
+            <p className='max-sm:hidden'>Welcome, {companyData.name}</p>
             <div className='relative group'>
-              <img className='w-8 border rounded-full' src={assets.company_icon} alt="" />
+              <img className='w-8 border rounded-full' src={companyData.image} alt="" />
               <div className='absolute hidden group-hover:block top-0 right-0 z-10 text-black rounded pt-12'>
                 <ul className='list-none m-0 p-2 bg-white rounded-md border text-sm'>
                   <li className='py-1 x-2 cursor-pointer pr-10'>Logout</li>
                 </ul>
               </div>
             </div>
-          </div>
+          </div>)}
+
         </div>
       </div>
       <div className='flex items-start'>

@@ -18,7 +18,7 @@ const RecruiterLogin = () => {
   const onSubmitHandler = async (e) => {
     e.preventDefault()
     if (state === 'Signup' && !isNextDataSubmitted) {
-      setIsNextDataSubmitted(true)
+      return setIsNextDataSubmitted(true)
     }
     try {
       if (state === "Login") {
@@ -43,7 +43,7 @@ const RecruiterLogin = () => {
         formData.append('email', email)
         formData.append('password', password)
         formData.append('image', image)
-        const { data } = await axios.post(`${backendUrl}/api/company/signup`, formData)
+        const { data } = await axios.post(`${backendUrl}/api/company/register`, formData)
         if (data.success) {
           console.log(data)
           setCompanyToken(data.token)
@@ -59,7 +59,7 @@ const RecruiterLogin = () => {
       }
     } catch (error) {
       console.log(error)
-      toast.error(error.response.data.message)
+      toast.error(error.message)
     }
   }
   useEffect(() => {
