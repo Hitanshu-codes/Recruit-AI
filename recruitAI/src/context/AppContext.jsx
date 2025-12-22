@@ -1,12 +1,16 @@
 import { createContext, use, useState, useEffect } from "react";
-import { jobsData } from "../assets/assets";
+// import { jobsData } from "../assets/assets";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useAuth, useUser } from "@clerk/clerk-react";
+
 
 export const AppContext = createContext();
 
 export const AppContextProvider = (props) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL
+  const { user, isLoaded } = useUser()
+  const { getToken } = useAuth()
   const [searchFilter, setSearchFilter] = useState({
     title: "",
     location: "",
@@ -16,11 +20,11 @@ export const AppContextProvider = (props) => {
   const [showRecruiterLogin, setShowRecruiterLogin] = useState(false)
   const [companyToken, setCompanyToken] = useState(null)
   const [companyData, setCompanyData] = useState(null)
+  const [userData, setUserData] = useState(null)
+  const [userApplications, setUserApplications] = useState([])
+
 
   const fetchJobs = async () => {
-
-
-
     try {
       const { data } = await axios.get(`${backendUrl}/api/jobs`, { headers: { token: companyToken } })
 
@@ -37,6 +41,31 @@ export const AppContextProvider = (props) => {
       toast.error(error.message)
     }
     // setJobs(jobsData)
+  }
+  // function to fetch user data
+  const fetchUserData = async () => {
+    try {
+      const token = await getToken()
+      const url = `${backendUrl}/api/users/user`
+      console.log('fetchUserData -> url:', url, 'token:', token)
+      const { data } = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } })
+
+      if (data.success) {
+        setUserData(data.user)
+      }
+      else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      // improved error logging
+      console.error('fetchUserData error', error)
+      if (error.response) {
+        console.error('response data:', error.response.data, 'status:', error.response.status)
+        toast.error(error.response.data?.message || `Request failed: ${error.response.status}`)
+      } else {
+        toast.error(error.message)
+      }
+    }
   }
   const fetchCompanyData = async () => {
     try {
@@ -65,6 +94,15 @@ export const AppContextProvider = (props) => {
       fetchCompanyData()
     }
   }, [companyToken])
+
+  useEffect(() => {
+    if (user) {
+      fetchUserData()
+    }
+    if (!isLoaded) return
+    if (user?.id) fetchUserData()
+  }, [user?.id, isLoaded])
+
   const value = {
     setIsSearched,
     isSearched,
@@ -73,7 +111,8 @@ export const AppContextProvider = (props) => {
     jobs, setJobs,
     showRecruiterLogin, setShowRecruiterLogin,
     companyToken, setCompanyToken,
-    companyData, setCompanyData, backendUrl
+    companyData, setCompanyData, backendUrl,
+    userData, userApplications
   }
   return (
     <AppContext.Provider value={value}>

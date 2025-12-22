@@ -16,13 +16,37 @@ const ApplyJob = () => {
   const { id } = useParams()
   const [jobData, setJobData] = useState(null)
 
-  const { jobs, backendUrl } = useContext(AppContext)
+  const { jobs, backendUrl, userData, userApplications } = useContext(AppContext)
   const fetchJob = async () => {
     try {
       const { data } = await axios.get(`${backendUrl}/api/jobs/${id}`)
       if (data.success) {
         setJobData(data.job)
         toast.success(data.message)
+      }
+      else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error(error.message)
+    }
+  }
+  // apply for a job
+  const applyHandler = async () => {
+    try {
+      if (!userData) {
+        toast.error("Please login to apply for a job")
+        return
+      }
+      if (!userData.resume) {
+        toast.error("Please upload your resume to apply for a job")
+        return
+      }
+      const { data } = await axios.post(`${backendUrl}/api/users/apply-job`, { jobId: id }, { headers: { token: userData.token } })
+      if (data.success) {
+        toast.success(data.message)
+        fetchJob()
       }
       else {
         toast.error(data.message)
