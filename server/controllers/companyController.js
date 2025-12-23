@@ -132,7 +132,18 @@ export const postJob = async (req, res) => {
 }
 
 // get company job applicants
-export const getJobApplicants = async (req, res) => { }
+export const getCompanyJobApplicants = async (req, res) => {
+  try {
+    const companyId = req.company._id
+    // find job application for the user and populate related data
+    const applications = await JobApplication.find({ companyId }).populate('userId', 'name image resume').populate('jobId', 'title location category level salary').exec()
+
+    return res.status(200).json({ success: true, applications })
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ success: false, message: error.message })
+  }
+}
 
 // get company posted jobs
 export const getCompanyPostedJobs = async (req, res) => {
@@ -153,7 +164,18 @@ export const getCompanyPostedJobs = async (req, res) => {
 }
 
 // change job Application status
-export const changeJobApplicationStatus = async (req, res) => { }
+export const changeJobApplicationStatus = async (req, res) => {
+  try {
+    const { id, status } = req.body
+    // find job application data and update status
+    await JobApplication.findOneAndUpdate({ _id: id }, { status })
+    return res.status(200).json({ success: true, message: "Job application status changed successfully" })
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ success: false, message: error.message })
+
+  }
+}
 
 // change job visibilty
 export const changeJobVisibilty = async (req, res) => {

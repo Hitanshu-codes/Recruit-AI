@@ -36,6 +36,9 @@ const Applications = () => {
     setIsEdit(false)
     setResume(null)
   }
+  useEffect(() => {
+    fetchUserApplications()
+  }, [])
 
   return (
     <div>
@@ -56,8 +59,7 @@ const Applications = () => {
 
             </> :
               <div className='flex gap-2'>
-                <a className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg" href="
-              ">
+                <a target='_blank' className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg" href={userData.resume}>
                   Resume
                 </a>
                 <button onClick={() => setIsEdit(true)} className='text-gray-500 border border-gray-300 rounded-lg px-4 py-2'>
@@ -87,7 +89,7 @@ const Applications = () => {
                   <td className='px-4 py-2 border-b max-sm:hidden'>{job.jobId.location}</td>
                   <td className='px-4 py-2 border-b max-sm:hidden'>{moment(job.date).format('ll')}</td>
                   <td className='px-4 py-2 border-b'>
-                    <span className={`${job.status === 'Accepted' ? 'bg-green-100' : job.status === 'Rejected' ? 'bg-red-100' : 'bg-yellow-100'} px-4 py-1 rounded-lg text-xs ${job.status === 'Accepted' ? 'text-green-600' : job.status === 'Rejected' ? 'text-red-600' : 'text-yellow-600'}`}>
+                    <span className={`${job.status === 'accepted' ? 'bg-green-100' : job.status === 'rejected' ? 'bg-red-100' : 'bg-yellow-100'} px-4 py-1 rounded-lg text-xs ${job.status === 'accepted' ? 'text-green-600' : job.status === 'rejected' ? 'text-red-600' : 'text-yellow-600'}`}>
                       {job.status}</span></td>
                 </tr>
               ) : (null))
