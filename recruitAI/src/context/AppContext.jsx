@@ -47,7 +47,7 @@ export const AppContextProvider = (props) => {
     try {
       const token = await getToken()
       const url = `${backendUrl}/api/users/user`
-      console.log('fetchUserData -> url:', url, 'token:', token)
+      // console.log('fetchUserData -> url:', url, 'token:', token)
       const { data } = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } })
 
       if (data.success) {
@@ -65,6 +65,26 @@ export const AppContextProvider = (props) => {
       } else {
         toast.error(error.message)
       }
+    }
+  }
+  const fetchUserApplications = async () => {
+    try {
+      const token = await getToken()
+      const url = `${backendUrl}/api/users/applied-jobs`
+      // console.log('fetchUserData -> url:', url, 'token:', token)
+      const { data } = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } })
+
+      if (data.success) {
+        setUserApplications(data.jobs)
+      }
+      else {
+        toast.error(data.message)
+      }
+    }
+    catch (error) {
+      // improved error logging
+      console.error('fetchUserData error', error)
+      toast.error(error.message)
     }
   }
   const fetchCompanyData = async () => {
@@ -98,6 +118,7 @@ export const AppContextProvider = (props) => {
   useEffect(() => {
     if (user) {
       fetchUserData()
+      fetchUserApplications()
     }
     if (!isLoaded) return
     if (user?.id) fetchUserData()
@@ -112,7 +133,7 @@ export const AppContextProvider = (props) => {
     showRecruiterLogin, setShowRecruiterLogin,
     companyToken, setCompanyToken,
     companyData, setCompanyData, backendUrl,
-    userData, userApplications
+    userData, userApplications, fetchUserData, setUserApplications, fetchUserApplications
   }
   return (
     <AppContext.Provider value={value}>

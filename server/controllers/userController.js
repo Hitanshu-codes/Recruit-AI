@@ -99,27 +99,41 @@ export const getUserData = async (req, res) => {
 
 // apply for a job
 export const applyForJob = async (req, res) => {
-  const { jobId } = req.body
-  const { userId } = req.auth()
   try {
-    const isAlreadyApplied = await JobApplication.find({ jobId, userId })
-    if (isAlreadyApplied.length > 0) return res.status(400).json({ success: false, message: "You have already applied for this job" })
+    console.log('applyForJob -> headers:', req.headers)
+    console.log('applyForJob -> body:', req.body)
+
+    const { jobId } = req.body
+    const authObj = typeof req.auth === 'function' ? req.auth() : req.auth
+    const userId = authObj?.userId
+
+    console.log('applyForJob -> userId:', userId, 'jobId:', jobId)
+
+    if (!userId) return res.status(401).json({ success: false, message: 'User not authenticated' })
+    if (!jobId) return res.status(400).json({ success: false, message: 'jobId required' })
+
     const jobData = await Job.findById(jobId)
-    if (!jobData) return res.status(404).json({ success: false, message: "Job not found" })
+    if (!jobData) return res.status(404).json({ success: false, message: 'Job not found' })
+
+    const isAlreadyApplied = await JobApplication.findOne({ jobId, userId })
+    if (isAlreadyApplied) return res.status(400).json({ success: false, message: 'You have already applied for this job' })
 
     const jobApplication = new JobApplication({
       jobId,
       userId,
       companyId: jobData.companyId,
-
       date: Date.now()
     })
+
     await jobApplication.save()
-    return res.status(200).json({ success: true, message: "Job applied successfully" })
-  }
-  catch (error) {
-    console.log(error)
-    return res.status(500).json({ success: false, message: "Server error" })
+    return res.status(200).json({ success: true, message: 'Job applied successfully' })
+  } catch (error) {
+    console.error('applyForJob error:', error.stack || error)
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? (error.message || error.stack) : undefined
+    })
   }
 }
 
@@ -144,7 +158,7 @@ export const updateUserResume = async (req, res) => {
 
   try {
     const userId = req.auth.userId
-    const resumeFile = req.resumeFile
+    const resumeFile = req.file
     const user = await User.findById(userId)
     if (resumeFile) {
       const resumeUpload = await cloudinary.uploader.upload(resumeFile.path)
